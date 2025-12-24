@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Certificate - {{ client.client_name }}{% endblock %}
+
+{% block content %}
+<header style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="font-size: 1.8rem; font-weight: 700;">Medical Certificate</h1>
+        <p style="color: var(--text-light);">{{ client.client_name }} | {{ client.passport_no }}</p>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        <button id="copy-btn" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary);">
+            <i class="fas fa-copy"></i> Copy Image
+        </button>
+        <a href="{{ cert_url }}" download="certificate_{{ client.id }}.jpg" class="btn btn-primary">
+            <i class="fas fa-download"></i> Download
+        </a>
+    </div>
+</header>
+
+<div class="card" style="padding: 0; overflow: hidden; display: flex; justify-content: center; background: #f0f2f5;">
+    <img id="cert-image" src="{{ cert_url }}" alt="Medical Certificate" style="max-width: 100%; height: auto; box-shadow: var(--shadow);">
+</div>
+
+<!-- Notification for Copy Feedback -->
+<div id="copy-notification" style="display: none; position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #1E293B; color: white; padding: 0.75rem 1.5rem; border-radius: 50px; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 0.9rem; align-items: center; gap: 0.5rem;">
+    <i class="fas fa-check-circle" style="color: #10B981;"></i>
+    Certificate copied to clipboard!
+</div>
+
+<script>
+document.getElementById('copy-btn').addEventListener('click', async () => {
+    const imageUrl = "{{ cert_url }}";
+    const btn = document.getElementById('copy-btn');
+    const icon = btn.querySelector('i');
+    
+    try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        
+        const data = [new ClipboardItem({ [blob.type]: blob })];
+        await navigator.clipboard.write(data);
+        
+        // Visual feedback
+        showNotification();
+        icon.classList.remove('fa-copy');
+        icon.classList.add('fa-check');
+        btn.style.borderColor = '#10B981';
+        btn.style.color = '#10B981';
+        
+        setTimeout(() => {
+            icon.classList.remove('fa-check');
+            icon.classList.add('fa-copy');
+            btn.style.borderColor = 'var(--primary)';
+            btn.style.color = 'var(--primary)';
+        }, 2000);
+
+    } catch (error) {
+        console.error('Sharing failed', error);
+        alert('Could not copy the certificate. Your browser might not support this feature or requires a secure (HTTPS) connection.');
+    }
+});
+
+function showNotification() {
+    const notification = document.getElementById('copy-notification');
+    notification.style.display = 'flex';
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
+</script>
+{% endblock %}

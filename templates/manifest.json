@@ -1,0 +1,21 @@
+{
+  "name": "AMJ-TLS Medical",
+  "short_name": "AMJ-TLS",
+  "description": "Medical client and template management system.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#4F46E5",
+  "icons": [
+    {
+      "src": "/static/icons/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -16,7 +16,14 @@ def view_certificate(request, client_pk):
         return render(request, 'medical/error.html', {'message': 'No active template found. Please create and activate a template first.'})
     
     cert_url = generate_medical_certificate(client, template)
-    return redirect(cert_url)
+    
+    if request.GET.get('format') == 'image':
+        return redirect(cert_url)
+        
+    return render(request, 'medical/certificate_view.html', {
+        'client': client,
+        'cert_url': cert_url
+    })
 
 class ClientListView(ListView):
     model = Client

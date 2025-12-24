@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AMJ-TLS Medical{% endblock %}</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="icon" type="image/png" href="/static/icons/icon.png">
+    <link rel="apple-touch-icon" href="/static/icons/icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
@@ -181,6 +185,9 @@
         <div style="display: flex; gap: 1.5rem; align-items: center;">
             <a href="{% url 'client_list' %}" style="text-decoration: none; color: var(--text-light); font-weight: 500; font-size: 0.9rem;">Clients</a>
             <a href="{% url 'template_list' %}" style="text-decoration: none; color: var(--text-light); font-weight: 500; font-size: 0.9rem;">Templates</a>
+            <button id="install-pwa-btn" class="btn btn-outline" style="display: none;">
+                <i class="fas fa-download"></i> Install App
+            </button>
             <a href="{% url 'client_create' %}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> New Client
             </a>
@@ -192,6 +199,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="/static/pwa.js"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

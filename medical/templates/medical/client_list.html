@@ -18,7 +18,9 @@
 {% if clients %}
     <div style="display: grid; gap: 1rem;">
         {% for client in clients %}
-            <div class="card" style="display: flex; align-items: center; gap: 1.5rem; transition: transform 0.2s; cursor: pointer; padding: 1rem;" onclick="location.href='{% url 'client_update' client.pk %}';">
+            <div class="card client-card" 
+                 data-url="{% url 'client_update' client.pk %}"
+                 style="display: flex; align-items: center; gap: 1.5rem; transition: transform 0.2s; cursor: pointer; padding: 1rem;">
                 <div style="width: 70px; height: 70px; border-radius: 12px; overflow: hidden; background: #eee; flex-shrink: 0;">
                     {% if client.photo %}
                         <img src="{{ client.photo.url }}" alt="{{ client.client_name }}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -36,8 +38,15 @@
                         <span><i class="fas fa-calendar-alt" style="margin-right: 4px;"></i> {{ client.date|date:"M d, Y" }}</span>
                     </div>
                 </div>
-                <div style="display: flex; gap: 1rem; align-items: center;">
-                    <a href="{% url 'view_certificate' client.pk %}" class="btn btn-outline" style="padding: 0.5rem 0.75rem; font-size: 0.8rem; border-color: var(--accent); color: var(--accent);" onclick="event.stopPropagation();">
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <button class="btn btn-outline copy-cert-btn" 
+                       data-name="{{ client.client_name }}"
+                       data-url="{% url 'view_certificate' client.pk %}?format=image"
+                       style="padding: 0.5rem; font-size: 1rem; border-color: var(--primary); color: var(--primary); min-width: 40px; justify-content: center; background: transparent;" 
+                       title="Copy Certificate to Clipboard">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <a href="{% url 'view_certificate' client.pk %}" class="btn btn-outline cert-link" style="padding: 0.5rem 0.75rem; font-size: 0.8rem; border-color: var(--accent); color: var(--accent);">
                         <i class="fas fa-file-medical"></i> Cert
                     </a>
                     <div style="color: var(--primary);">
@@ -54,4 +63,68 @@
         <p style="color: #94A3B8; font-size: 0.9rem;">Try adjusting your search or add a new client.</p>
     </div>
 {% endif %}
+
+<!-- Notification for Copy Feedback -->
+<div id="copy-notification" style="display: none; position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #1E293B; color: white; padding: 0.75rem 1.5rem; border-radius: 50px; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 0.9rem; align-items: center; gap: 0.5rem;">
+    <i class="fas fa-check-circle" style="color: #10B981;"></i>
+    Certificate copied to clipboard!
+</div>
+
+<script>
+document.querySelectorAll('.client-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        window.location.href = card.dataset.url;
+    });
+});
+
+document.querySelectorAll('.copy-cert-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const url = btn.dataset.url;
+        const icon = btn.querySelector('i');
+        
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Network response was not ok');
+            const blob = await response.blob();
+            
+            if (!blob.type.startsWith('image/')) {
+                alert('Could not retrieve the image file.');
+                return;
+            }
+
+            // Clipboard API supports copying Blobs directly in modern browsers
+            const data = [new ClipboardItem({ [blob.type]: blob })];
+            await navigator.clipboard.write(data);
+            
+            // Visual feedback
+            showNotification();
+            icon.classList.remove('fa-copy');
+            icon.classList.add('fa-check');
+            btn.style.borderColor = '#10B981';
+            btn.style.color = '#10B981';
+            
+            setTimeout(() => {
+                icon.classList.remove('fa-check');
+                icon.classList.add('fa-copy');
+                btn.style.borderColor = 'var(--primary)';
+                btn.style.color = 'var(--primary)';
+            }, 2000);
+
+        } catch (error) {
+            console.error('Copying failed', error);
+            alert('Could not copy the image. Your browser might not support this feature or requires a secure (HTTPS) connection.');
+        }
+    });
+});
+
+function showNotification() {
+    const notification = document.getElementById('copy-notification');
+    notification.style.display = 'flex';
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
+</script>
 {% endblock %}
