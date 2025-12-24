@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - AMJ-TLS Medical{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 4rem auto;">
+    <div class="card animate-fade">
+        <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary);">Login</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div style="background-color: #FEE2E2; color: #DC2626; padding: 1rem; border-radius: var(--radius); margin-bottom: 1.5rem; text-align: center;">
+                Invalid username or password.
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-input" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-input" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

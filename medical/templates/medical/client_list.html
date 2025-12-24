@@ -4,8 +4,8 @@
 
 {% block content %}
 <header style="margin-bottom: 2rem;">
-    <h1 style="font-size: 1.8rem; font-weight: 700;">Client Directory</h1>
-    <p style="color: var(--text-light);">Manage medical records and client information.</p>
+    <h1 style="font-size: 1.8rem; font-weight: 700;">Medicals</h1>
+    <!-- <p style="color: var(--text-light);">Manage medical records and client information.</p> -->
 </header>
 
 <form method="GET" action="{% url 'client_list' %}" class="search-container">
@@ -15,43 +15,172 @@
     </button>
 </form>
 
+
+<style>
+    .client-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .client-card {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .client-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .client-photo-container {
+        width: 70px;
+        height: 70px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #eee;
+        flex-shrink: 0;
+    }
+
+    .client-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .client-info {
+        flex: 1;
+        min-width: 0; /* Prevents flex item from overflowing */
+    }
+
+    .client-name {
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .client-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+        color: var(--text-light);
+    }
+
+    .client-meta span {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+    
+    .client-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 640px) {
+        .search-container {
+            flex-direction: column;
+        }
+        
+        .search-input {
+            width: 100%;
+        }
+
+        .client-card {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            grid-template-areas: 
+                "photo info arrow"
+                "actions actions actions";
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .client-photo-container {
+            grid-area: photo;
+            width: 60px;
+            height: 60px;
+        }
+
+        .client-info {
+            grid-area: info;
+        }
+
+        .client-arrow {
+            grid-area: arrow;
+            align-self: center;
+        }
+
+        .client-actions {
+            grid-area: actions;
+            width: 100%;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 1rem;
+            justify-content: space-between;
+        }
+
+        .client-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .client-name {
+            white-space: normal; /* Allow wrapping on very small screens if needed, or keep ellipsis */
+            font-size: 1.05rem;
+        }
+    }
+</style>
+
 {% if clients %}
-    <div style="display: grid; gap: 1rem;">
+    <div class="client-grid">
         {% for client in clients %}
             <div class="card client-card" 
-                 data-url="{% url 'client_update' client.pk %}"
-                 style="display: flex; align-items: center; gap: 1.5rem; transition: transform 0.2s; cursor: pointer; padding: 1rem;">
-                <div style="width: 70px; height: 70px; border-radius: 12px; overflow: hidden; background: #eee; flex-shrink: 0;">
+                 data-url="{% url 'view_certificate' client.pk %}">
+                
+                <div class="client-photo-container">
                     {% if client.photo %}
-                        <img src="{{ client.photo.url }}" alt="{{ client.client_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="{{ client.photo.url }}" alt="{{ client.client_name }}" class="client-photo">
                     {% else %}
                         <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc;">
                             <i class="fas fa-user fa-2x"></i>
                         </div>
                     {% endif %}
                 </div>
-                <div style="flex: 1;">
-                    <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem;">{{ client.client_name }}</h3>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; font-size: 0.85rem; color: var(--text-light);">
+
+                <div class="client-info">
+                    <h3 class="client-name">{{ client.client_name }}</h3>
+                    <div class="client-meta">
                         <span><i class="fas fa-id-card" style="margin-right: 4px;"></i> {{ client.passport_no }}</span>
                         <span><i class="fas fa-birthday-cake" style="margin-right: 4px;"></i> {{ client.age }} Years</span>
                         <span><i class="fas fa-calendar-alt" style="margin-right: 4px;"></i> {{ client.date|date:"M d, Y" }}</span>
                     </div>
                 </div>
-                <div style="display: flex; gap: 0.75rem; align-items: center;">
+
+                <div class="client-arrow" style="color: var(--primary);">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+
+                <div class="client-actions">
                     <button class="btn btn-outline copy-cert-btn" 
                        data-name="{{ client.client_name }}"
                        data-url="{% url 'view_certificate' client.pk %}?format=image"
-                       style="padding: 0.5rem; font-size: 1rem; border-color: var(--primary); color: var(--primary); min-width: 40px; justify-content: center; background: transparent;" 
+                       style="padding: 0.5rem; border-color: var(--primary); color: var(--primary); justify-content: center; background: transparent;" 
                        title="Copy Certificate to Clipboard">
-                        <i class="fas fa-copy"></i>
+                        <i class="fas fa-copy"></i> Copy
                     </button>
-                    <a href="{% url 'view_certificate' client.pk %}" class="btn btn-outline cert-link" style="padding: 0.5rem 0.75rem; font-size: 0.8rem; border-color: var(--accent); color: var(--accent);">
-                        <i class="fas fa-file-medical"></i> Cert
+                    <a href="{% url 'client_update' client.pk %}" class="btn btn-outline" style="padding: 0.5rem 0.75rem; border-color: var(--primary); color: var(--primary);">
+                        <i class="fas fa-edit"></i> Edit
                     </a>
-                    <div style="color: var(--primary);">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
                 </div>
             </div>
         {% endfor %}

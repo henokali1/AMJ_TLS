@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users - AMJ-TLS Medical{% endblock %}
+
+{% block content %}
+<div class="card animate-fade">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="color: var(--primary);">Manage Users</h2>
+        <a href="{% url 'user_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add User
+        </a>
+    </div>
+
+    {% if users %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #E2E8F0;">
+                        <th style="text-align: left; padding: 1rem; color: var(--text-light);">Username</th>
+                        <th style="text-align: left; padding: 1rem; color: var(--text-light);">Status</th>
+                        <th style="text-align: left; padding: 1rem; color: var(--text-light);">Role</th>
+                        <th style="text-align: right; padding: 1rem; color: var(--text-light);">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr style="border-bottom: 1px solid #E2E8F0;">
+                        <td style="padding: 1rem; font-weight: 500;">
+                            {{ u.username }} 
+                            {% if u == user %} (You) {% endif %}
+                        </td>
+                        <td style="padding: 1rem;">
+                            {% if u.is_active %}
+                            <span style="background: #D1FAE5; color: #065F46; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem;">Active</span>
+                            {% else %}
+                            <span style="background: #FEE2E2; color: #991B1B; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem;">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem;">
+                            {% if u.is_superuser %}
+                                Superuser
+                            {% elif u.is_staff %}
+                                Staff
+                            {% else %}
+                                Standard
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem; text-align: right;">
+                            <a href="{% url 'user_update' u.pk %}" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+            <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; color: #CBD5E1;"></i>
+            <p>No users found.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

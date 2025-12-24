@@ -3,22 +3,74 @@
 {% block title %}Certificate - {{ client.client_name }}{% endblock %}
 
 {% block content %}
-<header style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <h1 style="font-size: 1.8rem; font-weight: 700;">Medical Certificate</h1>
+<style>
+    .cert-header {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .cert-info h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .cert-actions {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .cert-card {
+        padding: 0;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        background: #f0f2f5;
+    }
+    
+    @media (max-width: 640px) {
+        .cert-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1.5rem;
+        }
+        
+        .cert-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            margin: 0;
+        }
+        
+        .cert-actions .btn {
+            justify-content: center;
+            width: 100%;
+        }
+
+        .cert-info h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<header class="cert-header">
+    <div class="cert-info">
+        <h1>Medical Certificate</h1>
         <p style="color: var(--text-light);">{{ client.client_name }} | {{ client.passport_no }}</p>
     </div>
-    <div style="display: flex; gap: 1rem;">
+    <div class="cert-actions">
         <button id="copy-btn" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary);">
-            <i class="fas fa-copy"></i> Copy Image
+            <i class="fas fa-copy"></i> <span class="btn-text">Copy Image</span>
         </button>
         <a href="{{ cert_url }}" download="certificate_{{ client.id }}.jpg" class="btn btn-primary">
-            <i class="fas fa-download"></i> Download
+            <i class="fas fa-download"></i> <span class="btn-text">Download</span>
         </a>
     </div>
 </header>
 
-<div class="card" style="padding: 0; overflow: hidden; display: flex; justify-content: center; background: #f0f2f5;">
+<div class="card cert-card">
     <img id="cert-image" src="{{ cert_url }}" alt="Medical Certificate" style="max-width: 100%; height: auto; box-shadow: var(--shadow);" crossorigin="anonymous">
 </div>
 

@@ -14,4 +14,9 @@ urlpatterns = [
     path('templates/<int:pk>/delete/', views.TemplateDeleteView.as_view(), name='template_delete'),
     path('templates/<int:pk>/finder/', views.CoordinateFinderView.as_view(), name='coordinate_finder'),
     path('client/<int:client_pk>/certificate/', views.view_certificate, name='view_certificate'),
+    
+    # User Management
+    path('users/', views.UserListView.as_view(), name='user_list'),
+    path('users/new/', views.UserCreateView.as_view(), name='user_create'),
+    path('users/<int:pk>/edit/', views.UserUpdateView.as_view(), name='user_update'),
 ]

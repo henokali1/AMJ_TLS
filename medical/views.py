@@ -1,13 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.db.models import Q
 from django.http import JsonResponse
 import json
 from .models import Client, ReportTemplate
-from .forms import ClientForm
+from .forms import ClientForm, UserForm, UserEditForm
+from django.contrib.auth.models import User
 from .utils import generate_medical_certificate
 
+@login_required
 def view_certificate(request, client_pk):
     client = get_object_or_404(Client, pk=client_pk)
     template = ReportTemplate.objects.filter(is_active=True).first()
@@ -25,61 +29,69 @@ def view_certificate(request, client_pk):
         'cert_url': cert_url
     })
 
-class ClientListView(ListView):
+class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     template_name = 'medical/client_list.html'
     context_object_name = 'clients'
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        search_query = self.request.GET.get('q')
-        if search_query:
-            queryset = queryset.filter(
-                Q(client_name__icontains=search_query) |
-                Q(passport_no__icontains=search_query)
-            )
-        return queryset.order_by('-date')
+        try:
+            queryset = super().get_queryset()
+            search_query = self.request.GET.get('q')
+            if search_query:
+                queryset = queryset.filter(
+                    Q(client_name__icontains=search_query) |
+                    Q(passport_no__icontains=search_query)
+                )
+            return queryset.order_by('-date')
+        except Exception as e:
+            print(f"Error in ClientListView: {e}")
+            return Client.objects.none()
 
-class ClientCreateView(CreateView):
+class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
     template_name = 'medical/client_form.html'
     success_url = reverse_lazy('client_list')
 
-class ClientUpdateView(UpdateView):
+class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
     template_name = 'medical/client_form.html'
     success_url = reverse_lazy('client_list')
 
-class ClientDeleteView(DeleteView):
+class ClientDeleteView(LoginRequiredMixin, DeleteView):
     model = Client
     template_name = 'medical/client_confirm_delete.html'
     success_url = reverse_lazy('client_list')
 
-class TemplateListView(ListView):
+class AdminRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.is_superuser
+
+class TemplateListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
     model = ReportTemplate
     template_name = 'medical/template_list.html'
     context_object_name = 'templates'
 
-class TemplateCreateView(CreateView):
+class TemplateCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
     model = ReportTemplate
     fields = ['name', 'template_image', 'font_size', 'is_active']
     template_name = 'medical/template_form.html'
     success_url = reverse_lazy('template_list')
 
-class TemplateUpdateView(UpdateView):
+class TemplateUpdateView(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
     model = ReportTemplate
     fields = ['name', 'template_image', 'font_size', 'is_active']
     template_name = 'medical/template_form.html'
     success_url = reverse_lazy('template_list')
 
-class TemplateDeleteView(DeleteView):
+class TemplateDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
     model = ReportTemplate
     template_name = 'medical/template_confirm_delete.html'
     success_url = reverse_lazy('template_list')
 
-class CoordinateFinderView(DetailView):
+class CoordinateFinderView(LoginRequiredMixin, AdminRequiredMixin, DetailView):
     model = ReportTemplate
     template_name = 'medical/coordinate_finder.html'
     context_object_name = 'template'
@@ -103,3 +115,20 @@ class CoordinateFinderView(DetailView):
         
         template.save()
         return JsonResponse({'status': 'success'})
+
+class UserListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
+    model = User
+    template_name = 'medical/user_list.html'
+    context_object_name = 'users'
+
+class UserCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
+    model = User
+    form_class = UserForm
+    template_name = 'medical/user_form.html'
+    success_url = reverse_lazy('user_list')
+
+class UserUpdateView(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
+    model = User
+    form_class = UserEditForm
+    template_name = 'medical/user_form.html'
+    success_url = reverse_lazy('user_list')

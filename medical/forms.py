@@ -1,5 +1,29 @@
 from django import forms
 from .models import Client
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
+
+class UserForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+    is_staff = forms.BooleanField(label="Is Admin (Full Access)", required=False)
+    
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'is_active', 'is_staff']
+        
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password"])
+        if commit:
+            user.save()
+        return user
+
+class UserEditForm(forms.ModelForm):
+    is_staff = forms.BooleanField(label="Is Admin (Full Access)", required=False)
+
+    class Meta:
+        model = User
+        fields = ['username', 'is_active', 'is_staff']
 
 class ClientForm(forms.ModelForm):
     class Meta:

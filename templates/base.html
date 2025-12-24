@@ -177,20 +177,43 @@
     </style>
 </head>
 <body>
+    <style>
+        .nav-link-text { display: inline; }
+        .nav-gap { gap: 1.5rem; }
+        
+        @media (max-width: 640px) {
+            .nav-link-text { display: none; }
+            .nav-gap { gap: 0.75rem; }
+            .view-desktop-only { display: none !important; }
+        }
+    </style>
     <nav>
         <a href="{% url 'client_list' %}" class="logo">
             <i class="fas fa-heart-pulse"></i>
-            AMJ-TLS Medical
+            <span class="nav-link-text" style="font-size: 1.2rem; margin-left: 0.5rem;">AMJ-TLS Medical</span>
         </a>
-        <div style="display: flex; gap: 1.5rem; align-items: center;">
-            <a href="{% url 'client_list' %}" style="text-decoration: none; color: var(--text-light); font-weight: 500; font-size: 0.9rem;">Clients</a>
-            <a href="{% url 'template_list' %}" style="text-decoration: none; color: var(--text-light); font-weight: 500; font-size: 0.9rem;">Templates</a>
-            <button id="install-pwa-btn" class="btn btn-outline" style="display: none;">
-                <i class="fas fa-download"></i> Install App
-            </button>
-            <a href="{% url 'client_create' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> New Client
-            </a>
+        <div class="nav-gap" style="display: flex; align-items: center;">
+            {% if user.is_authenticated %}
+                <a href="{% url 'client_list' %}" style="text-decoration: none; color: var(--text-light); font-weight: 500; font-size: 0.9rem;" title="Medicals">
+                    <i class="fas fa-file-medical view-mobile-only" style="display: none;"></i>
+                    <span class="nav-link-text">Medicals</span>
+                </a>
+                
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'template_list' %}" class="view-desktop-only" style="text-decoration: none; color: var(--text-light); font-weight: 500; font-size: 0.9rem;">Templates</a>
+                    <a href="{% url 'user_list' %}" class="view-desktop-only" style="text-decoration: none; color: var(--text-light); font-weight: 500; font-size: 0.9rem;">Users</a>
+                {% endif %}
+
+                <a href="{% url 'client_create' %}" class="btn btn-primary" title="New Client">
+                    <i class="fas fa-plus"></i> <span class="nav-link-text">New Client</span>
+                </a>
+                
+                <a href="{% url 'logout' %}" style="text-decoration: none; color: var(--text-light); font-weight: 500; font-size: 0.9rem;" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i> <span class="nav-link-text">Logout</span>
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+            {% endif %}
         </div>
     </nav>
 
