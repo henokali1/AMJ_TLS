@@ -143,7 +143,8 @@
                 }
             }).then(response => {
                 if (response.ok) {
-                    window.location.href = "{% url 'client_list' %}";
+                    // Use the response URL which follows the server-side redirect (to view_certificate)
+                    window.location.href = response.url;
                 } else {
                     alert('Error saving client. Please check your data.');
                     saveBtn.disabled = false;
