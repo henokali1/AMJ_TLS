@@ -1,0 +1,55 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Virtual Environments
+# =========================
+.venv/
+venv/
+env/
+
+# =========================
+# Django
+# =========================
+*.log
+local_settings.py
+settings_local.py
+
+# Django cache & sessions
+.cache/
+sessions/
+
+# =========================
+# Media & Static (adjust if needed)
+# =========================
+# media/
+# staticfiles/
+
+# =========================
+# IDE / Editor files
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Node / Frontend (if any)
+# =========================
+node_modules/
+
+# =========================
+# IMPORTANT
+# =========================
+# db.sqlite3 is intentionally NOT ignored
+# so it will be tracked by Git

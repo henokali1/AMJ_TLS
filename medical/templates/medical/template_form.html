@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Template - AMJ-TLS{% endblock %}
+
+{% block content %}
+<div class="card">
+    <header style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 700;">
+            {% if form.instance.pk %}Edit Template: {{ form.instance.name }}{% else %}Upload New Template{% endif %}
+        </h1>
+        <p style="color: var(--text-light);">{% if form.instance.pk %}Update your certificate template settings.{% else %}Upload the background image for your medical certificates.{% endif %}</p>
+    </header>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label">Template Name</label>
+            <input type="text" name="name" class="form-input" placeholder="e.g. UAE Standard Report" value="{{ form.instance.name|default:'' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Injected Font Size (Default: 11)</label>
+            <input type="number" name="font_size" class="form-input" value="{{ form.instance.font_size|default:11 }}" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Template Image (Background)</label>
+            {% if form.instance.template_image %}
+                <p style="font-size: 0.8rem; margin-bottom: 0.5rem; color: var(--text-light);">Current: <a href="{{ form.instance.template_image.url }}" target="_blank">{{ form.instance.template_image.name }}</a></p>
+            {% endif %}
+            <input type="file" name="template_image" class="form-input" accept="image/*" {% if not form.instance.pk %}required{% endif %}>
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" name="is_active" id="is_active" {% if form.instance.is_active or not form.instance.pk %}checked{% endif %}>
+            <label for="is_active" class="form-label" style="margin-bottom: 0;">Set as Active Template</label>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                <i class="fas fa-upload"></i> Upload & Continue
+            </button>
+            <a href="{% url 'template_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

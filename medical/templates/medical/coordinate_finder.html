@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Coordinate Finder - {{ template.name }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: none;">
+    <header style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="font-size: 1.5rem; font-weight: 700;">Coordinate Finder: {{ template.name }}</h1>
+            <p style="color: var(--text-light);">Click on the template to set coordinates for each field.</p>
+        </div>
+        <button id="saveCoordinates" class="btn btn-primary">
+            <i class="fas fa-check-circle"></i> Save All Coordinates
+        </button>
+    </header>
+
+    <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+        <div id="controls" class="card"
+            style="padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; position: sticky; top: 100px; height: fit-content;">
+            <h3
+                style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-light); margin-bottom: 1rem;">
+                Select Field to Map</h3>
+
+            <div id="fieldButtons" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <button class="btn btn-outline field-btn active" data-field="name">Client Name</button>
+                <button class="btn btn-outline field-btn" data-field="passport">Passport No</button>
+                <button class="btn btn-outline field-btn" data-field="age">Age</button>
+                <button class="btn btn-outline field-btn" data-field="date">Date</button>
+                <div style="margin-top: 1rem; border-top: 1px solid #ddd; padding-top: 0.5rem;">
+                    <p style="font-size: 0.75rem; color: var(--text-light); margin-bottom: 0.5rem;">Photo Area (Click TL
+                        and BR corners):</p>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                        <button class="btn btn-outline field-btn" data-field="photo1">1. Top Left Corner</button>
+                        <button class="btn btn-outline field-btn" data-field="photo2">2. Bottom Right Corner</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                <p style="font-size: 0.8rem; color: var(--text-light);">Current Coordinates:</p>
+                <div id="currentCoords"
+                    style="font-family: monospace; font-size: 0.85rem; margin-top: 0.5rem; background: #fff; padding: 0.5rem; border-radius: 4px;">
+                    Select a field...
+                </div>
+            </div>
+        </div>
+
+        <div id="canvasContainer"
+            style="border: 2px solid #e2e8f0; border-radius: 8px; overflow: auto; background: #eee; height: 75vh;">
+            <div style="position: relative; display: inline-block;">
+                <img id="templateImg" src="{{ template.template_image.url }}"
+                    style="display: block; cursor: crosshair;">
+                <!-- Markers container moved inside relative wrapper -->
+                <div id="markers"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="template-config" data-name-x="{{ template.name_x }}" data-name-y="{{ template.name_y }}"
+    data-passport-x="{{ template.passport_x }}" data-passport-y="{{ template.passport_y }}"
+    data-age-x="{{ template.age_x }}" data-age-y="{{ template.age_y }}" data-date-x="{{ template.date_x }}"
+    data-date-y="{{ template.date_y }}" data-photo-x1="{{ template.photo_x1 }}" data-photo-y1="{{ template.photo_y1 }}"
+    data-photo-x2="{{ template.photo_x2 }}" data-photo-y2="{{ template.photo_y2 }}" style="display: none;"></div>
+
+<style>
+    .field-btn.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .marker {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: var(--danger);
+        border: 2px solid white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .marker::after {
+        content: attr(data-label);
+        position: absolute;
+        top: -18px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 9px;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+
+    .marker.photo-marker {
+        background: var(--accent);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const templateImg = document.getElementById('templateImg');
+    const fieldButtons = document.querySelectorAll('.field-btn');
+    const markersContainer = document.getElementById('markers');
+    const currentCoordsDisplay = document.getElementById('currentCoords');
+    const saveBtn = document.getElementById('saveCoordinates');
+    const config = document.getElementById('template-config').dataset;
+
+    let currentField = 'name';
+    let coordinates = {
+        name_x: parseInt(config.nameX) || 0, name_y: parseInt(config.nameY) || 0,
+        passport_x: parseInt(config.passportX) || 0, passport_y: parseInt(config.passportY) || 0,
+        age_x: parseInt(config.ageX) || 0, age_y: parseInt(config.ageY) || 0,
+        date_x: parseInt(config.dateX) || 0, date_y: parseInt(config.dateY) || 0,
+        photo_x1: parseInt(config.photoX1) || 0, photo_y1: parseInt(config.photoY1) || 0,
+        photo_x2: parseInt(config.photoX2) || 0, photo_y2: parseInt(config.photoY2) || 0
+    };
+
+    function renderMarkers() {
+        markersContainer.innerHTML = '';
+
+        // Define fields to map
+        const fields = [
+            { id: 'name', label: 'NAME', x: coordinates.name_x, y: coordinates.name_y },
+            { id: 'passport', label: 'PASSPORT', x: coordinates.passport_x, y: coordinates.passport_y },
+            { id: 'age', label: 'AGE', x: coordinates.age_x, y: coordinates.age_y },
+            { id: 'date', label: 'DATE', x: coordinates.date_x, y: coordinates.date_y },
+            { id: 'photo1', label: 'PHOTO TL', x: coordinates.photo_x1, y: coordinates.photo_y1, isPhoto: true },
+            { id: 'photo2', label: 'PHOTO BR', x: coordinates.photo_x2, y: coordinates.photo_y2, isPhoto: true }
+        ];
+
+        fields.forEach(f => {
+            if (f.x > 0 || f.y > 0) {
+                const marker = document.createElement('div');
+                marker.className = `marker ${f.isPhoto ? 'photo-marker' : ''}`;
+                marker.style.left = f.x + 'px';
+                marker.style.top = f.y + 'px';
+                marker.setAttribute('data-label', f.label);
+                markersContainer.appendChild(marker);
+            }
+        });
+    }
+
+    templateImg.onload = renderMarkers;
+
+    fieldButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            fieldButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentField = btn.dataset.field;
+            updateCoordDisplay();
+        });
+    });
+
+    templateImg.addEventListener('click', (e) => {
+        const rect = templateImg.getBoundingClientRect();
+        const x = Math.round(e.clientX - rect.left);
+        const y = Math.round(e.clientY - rect.top);
+
+        if (currentField === 'photo1') {
+            coordinates.photo_x1 = x;
+            coordinates.photo_y1 = y;
+        } else if (currentField === 'photo2') {
+            coordinates.photo_x2 = x;
+            coordinates.photo_y2 = y;
+        } else {
+            coordinates[currentField + '_x'] = x;
+            coordinates[currentField + '_y'] = y;
+        }
+
+        renderMarkers();
+        updateCoordDisplay();
+    });
+
+    function updateCoordDisplay() {
+        let x, y;
+        if (currentField === 'photo1') {
+            x = coordinates.photo_x1;
+            y = coordinates.photo_y1;
+        } else if (currentField === 'photo2') {
+            x = coordinates.photo_x2;
+            y = coordinates.photo_y2;
+        } else {
+            x = coordinates[currentField + '_x'];
+            y = coordinates[currentField + '_y'];
+        }
+        currentCoordsDisplay.innerText = `${currentField.toUpperCase().replace('PHOTO1', 'PHOTO TL').replace('PHOTO2', 'PHOTO BR')}: X=${x}, Y=${y}`;
+    }
+
+    saveBtn.addEventListener('click', () => {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: JSON.stringify(coordinates),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Coordinates saved successfully!');
+                }
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-check-circle"></i> Save All Coordinates';
+            });
+    });
+
+    updateCoordDisplay();
+</script>
+{% endblock %}

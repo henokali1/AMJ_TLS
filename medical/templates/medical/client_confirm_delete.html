@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Client - AMJ-TLS{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; border-top: 5px solid var(--danger);">
+    <i class="fas fa-exclamation-triangle fa-3x" style="color: var(--danger); margin-bottom: 1.5rem;"></i>
+    <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">Are you sure?</h1>
+    <p style="color: var(--text-light); margin-bottom: 2rem;">
+        You are about to delete the record for <strong>{{ object.client_name }}</strong>. This action cannot be undone.
+    </p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button type="submit" class="btn" style="background: var(--danger); color: white; flex: 1; max-width: 200px;">
+                Yes, Delete
+            </button>
+            <a href="{% url 'client_update' object.pk %}" class="btn btn-outline" style="flex: 1; max-width: 200px;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Template - AMJ-TLS{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 2rem auto; text-align: center;">
+    <header style="margin-bottom: 2rem;">
+        <i class="fas fa-exclamation-triangle fa-3x" style="color: var(--danger); margin-bottom: 1rem;"></i>
+        <h1 style="font-size: 1.5rem; font-weight: 700;">Delete Template?</h1>
+        <p style="color: var(--text-light);">Are you sure you want to delete <strong>{{ object.name }}</strong>? This action cannot be undone.</p>
+    </header>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div style="display: flex; gap: 1rem;">
+            <button type="submit" class="btn" style="flex: 1; background: var(--danger); color: white;">
+                Yes, Delete
+            </button>
+            <a href="{% url 'template_list' %}" class="btn btn-outline" style="flex: 1;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

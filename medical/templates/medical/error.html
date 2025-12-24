@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Error - AMJ-TLS{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; border-top: 5px solid var(--danger); padding: 4rem 2rem;">
+    <i class="fas fa-exclamation-circle fa-4x" style="color: var(--danger); margin-bottom: 1.5rem;"></i>
+    <h1 style="font-size: 2rem; margin-bottom: 1rem;">Oops! Something went wrong</h1>
+    <p style="color: var(--text-light); font-size: 1.1rem; margin-bottom: 2rem;">
+        {{ message|default:"An unexpected error occurred while processing your request." }}
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="javascript:history.back()" class="btn btn-outline">Go Back</a>
+        <a href="{% url 'template_list' %}" class="btn btn-primary">Go to Templates</a>
+    </div>
+</div>
+{% endblock %}
