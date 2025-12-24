@@ -33,6 +33,7 @@ class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     template_name = 'medical/client_list.html'
     context_object_name = 'clients'
+    paginate_by = 10
 
     def get_queryset(self):
         try:
