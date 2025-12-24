@@ -9,12 +9,29 @@ def generate_medical_certificate(client, template):
     draw = ImageDraw.Draw(img)
 
     # Font settings
-    # Try multiple bold fonts to ensure it looks bold
+    # Try to use Calibri Bold as requested, then fallbacks
     font_paths = [
-        "C:\\Windows\\Fonts\\arialbd.ttf",   # Arial Bold (Preferred for visibility)
-        "C:\\Windows\\Fonts\\calibrib.ttf",  # Calibri Bold
-        "C:\\Windows\\Fonts\\verdanab.ttf",  # Verdana Bold
-        "C:\\Windows\\Fonts\\tahomabd.ttf",  # Tahoma Bold
+        # 1. Look in project static folder (User can upload it here - Best for portability)
+        os.path.join(settings.BASE_DIR, 'static', 'fonts', 'calibrib.ttf'),
+        
+        # 2. System installs (Linux typically)
+        "/usr/share/fonts/truetype/msttcorefonts/calibrib.ttf",
+        "/usr/share/fonts/truetype/msttcorefonts/Calibri_Bold.ttf",
+        "/usr/local/share/fonts/calibrib.ttf",
+        "/usr/share/fonts/calibrib.ttf",
+        
+        # 3. Just the filename (Let PIL/OS find it)
+        "calibrib.ttf", 
+        "Calibri Bold.ttf",
+        
+        # 4. Windows Path (Development)
+        "C:\\Windows\\Fonts\\calibrib.ttf", 
+        
+        # 5. Bold Fallbacks (If Calibri specifically fails, ensuring we still get BOLD)
+        "arialbd.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
     ]
     
     font = None
@@ -23,13 +40,18 @@ def generate_medical_certificate(client, template):
     for path in font_paths:
         try:
             font = ImageFont.truetype(path, font_size)
-            # print(f"DEBUG: Loaded font {path}") # Uncomment for debugging
+            # print(f"DEBUG: Loaded font {path}") 
             break
         except Exception as e:
             continue
             
     if not font:
-        font = ImageFont.load_default()
+        # Fallback: Try to use 'arial' generic name which PIL might resolve on some systems
+        try:
+            font = ImageFont.truetype("arialbd.ttf", font_size)
+        except:
+             # Last resort
+            font = ImageFont.load_default()
 
     # Draw Text
     text_color = (0, 0, 0) # Black
