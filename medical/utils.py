@@ -9,26 +9,10 @@ def generate_medical_certificate(client, template):
     draw = ImageDraw.Draw(img)
 
     # Font settings
-    # Font settings
-    # Try to use Arial Bold, then Calibri Bold, then default
-    font_paths = [
-        "C:\\Windows\\Fonts\\arialbd.ttf",   # Arial Bold
-        "C:\\Windows\\Fonts\\calibrib.ttf",  # Calibri Bold
-        "C:\\Windows\\Fonts\\tahoma.ttf",    # Tahoma (usually thicker)
-    ]
-    
-    font = None
-    for path in font_paths:
-        if os.path.exists(path):
-            try:
-                font = ImageFont.truetype(path, template.font_size or 11)
-                print(f"DEBUG: Using font: {path}")
-                break
-            except Exception as e:
-                print(f"DEBUG: Error loading font {path}: {e}")
-    
-    if font is None:
-        print("DEBUG: Using default font")
+    font_path = "C:\\Windows\\Fonts\\calibrib.ttf"
+    try:
+        font = ImageFont.truetype(font_path, template.font_size or 11)
+    except:
         font = ImageFont.load_default()
 
     # Draw Text
