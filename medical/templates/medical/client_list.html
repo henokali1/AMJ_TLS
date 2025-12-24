@@ -85,36 +85,57 @@ document.querySelectorAll('.copy-cert-btn').forEach(btn => {
         const icon = btn.querySelector('i');
         
         try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const blob = await response.blob();
-            
-            if (!blob.type.startsWith('image/')) {
-                alert('Could not retrieve the image file.');
-                return;
-            }
-
-            // Clipboard API supports copying Blobs directly in modern browsers
-            const data = [new ClipboardItem({ [blob.type]: blob })];
-            await navigator.clipboard.write(data);
-            
-            // Visual feedback
-            showNotification();
+            // Change notification text to "Processing..." or just show icon change
             icon.classList.remove('fa-copy');
-            icon.classList.add('fa-check');
-            btn.style.borderColor = '#10B981';
-            btn.style.color = '#10B981';
+            icon.classList.add('fa-spinner', 'fa-spin');
+
+            // Load the image into an Image object
+            const img = new Image();
+            img.crossOrigin = "anonymous"; // Use anonymous for same-origin or CORS-enabled images
+            img.src = url;
             
-            setTimeout(() => {
-                icon.classList.remove('fa-check');
-                icon.classList.add('fa-copy');
-                btn.style.borderColor = 'var(--primary)';
-                btn.style.color = 'var(--primary)';
-            }, 2000);
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+            });
+
+            // Create a canvas to convert to PNG
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob(async (blob) => {
+                try {
+                    const data = [new ClipboardItem({ 'image/png': blob })];
+                    await navigator.clipboard.write(data);
+                    
+                    showNotification();
+                    icon.classList.remove('fa-spinner', 'fa-spin');
+                    icon.classList.add('fa-check');
+                    btn.style.borderColor = '#10B981';
+                    btn.style.color = '#10B981';
+                    
+                    setTimeout(() => {
+                        icon.classList.remove('fa-check');
+                        icon.classList.add('fa-copy');
+                        btn.style.borderColor = 'var(--primary)';
+                        btn.style.color = 'var(--primary)';
+                    }, 2000);
+                } catch (err) {
+                    console.error('Clipboard write failed:', err);
+                    alert('Could not copy to clipboard. Ensure you are using a modern browser.');
+                    icon.classList.remove('fa-spinner', 'fa-spin');
+                    icon.classList.add('fa-copy');
+                }
+            }, 'image/png');
 
         } catch (error) {
             console.error('Copying failed', error);
-            alert('Could not copy the image. Your browser might not support this feature or requires a secure (HTTPS) connection.');
+            alert('Could not process the certificate for copying.');
+            icon.classList.remove('fa-spinner', 'fa-spin');
+            icon.classList.add('fa-copy');
         }
     });
 });

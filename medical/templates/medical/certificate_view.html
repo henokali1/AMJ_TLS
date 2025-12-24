@@ -19,7 +19,7 @@
 </header>
 
 <div class="card" style="padding: 0; overflow: hidden; display: flex; justify-content: center; background: #f0f2f5;">
-    <img id="cert-image" src="{{ cert_url }}" alt="Medical Certificate" style="max-width: 100%; height: auto; box-shadow: var(--shadow);">
+    <img id="cert-image" src="{{ cert_url }}" alt="Medical Certificate" style="max-width: 100%; height: auto; box-shadow: var(--shadow);" crossorigin="anonymous">
 </div>
 
 <!-- Notification for Copy Feedback -->
@@ -30,34 +30,46 @@
 
 <script>
 document.getElementById('copy-btn').addEventListener('click', async () => {
-    const imageUrl = "{{ cert_url }}";
+    const imgElement = document.getElementById('cert-image');
     const btn = document.getElementById('copy-btn');
     const icon = btn.querySelector('i');
     
     try {
-        const response = await fetch(imageUrl);
-        const blob = await response.blob();
+        // Create a canvas to convert image to PNG (browsers generally only support PNG for clipboard)
+        const canvas = document.createElement('canvas');
+        canvas.width = imgElement.naturalWidth;
+        canvas.height = imgElement.naturalHeight;
         
-        const data = [new ClipboardItem({ [blob.type]: blob })];
-        await navigator.clipboard.write(data);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(imgElement, 0, 0);
         
-        // Visual feedback
-        showNotification();
-        icon.classList.remove('fa-copy');
-        icon.classList.add('fa-check');
-        btn.style.borderColor = '#10B981';
-        btn.style.color = '#10B981';
-        
-        setTimeout(() => {
-            icon.classList.remove('fa-check');
-            icon.classList.add('fa-copy');
-            btn.style.borderColor = 'var(--primary)';
-            btn.style.color = 'var(--primary)';
-        }, 2000);
+        canvas.toBlob(async (blob) => {
+            try {
+                const data = [new ClipboardItem({ 'image/png': blob })];
+                await navigator.clipboard.write(data);
+                
+                // Visual feedback
+                showNotification();
+                icon.classList.remove('fa-copy');
+                icon.classList.add('fa-check');
+                btn.style.borderColor = '#10B981';
+                btn.style.color = '#10B981';
+                
+                setTimeout(() => {
+                    icon.classList.remove('fa-check');
+                    icon.classList.add('fa-copy');
+                    btn.style.borderColor = 'var(--primary)';
+                    btn.style.color = 'var(--primary)';
+                }, 2000);
+            } catch (err) {
+                console.error('Clipboard write failed:', err);
+                alert('Could not copy to clipboard. Ensure you are using a modern browser and the site is served over HTTPS or localhost.');
+            }
+        }, 'image/png');
 
     } catch (error) {
-        console.error('Sharing failed', error);
-        alert('Could not copy the certificate. Your browser might not support this feature or requires a secure (HTTPS) connection.');
+        console.error('Copy process failed', error);
+        alert('Failed to process image for copying.');
     }
 });
 
