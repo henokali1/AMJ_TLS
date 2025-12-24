@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.db.models import Q
 from django.http import JsonResponse
 import json
@@ -52,13 +52,19 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
     template_name = 'medical/client_form.html'
-    success_url = reverse_lazy('client_list')
+    template_name = 'medical/client_form.html'
+    
+    def get_success_url(self):
+        return reverse('view_certificate', kwargs={'client_pk': self.object.pk})
 
 class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
     template_name = 'medical/client_form.html'
-    success_url = reverse_lazy('client_list')
+    template_name = 'medical/client_form.html'
+
+    def get_success_url(self):
+        return reverse('view_certificate', kwargs={'client_pk': self.object.pk})
 
 class ClientDeleteView(LoginRequiredMixin, DeleteView):
     model = Client
