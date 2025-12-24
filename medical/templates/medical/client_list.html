@@ -89,11 +89,13 @@
     /* Mobile Responsive Styles */
     @media (max-width: 640px) {
         .search-container {
-            flex-direction: column;
+            flex-direction: row;
+            gap: 0.5rem;
         }
         
         .search-input {
-            width: 100%;
+            width: auto;
+            flex: 1;
         }
 
         .client-card {
