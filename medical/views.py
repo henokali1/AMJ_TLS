@@ -43,7 +43,7 @@ class ClientListView(LoginRequiredMixin, ListView):
                     Q(client_name__icontains=search_query) |
                     Q(passport_no__icontains=search_query)
                 )
-            return queryset.order_by('-date')
+            return queryset.order_by('-pk')
         except Exception as e:
             print(f"Error in ClientListView: {e}")
             return Client.objects.none()
